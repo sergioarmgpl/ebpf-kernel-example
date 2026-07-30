@@ -1,40 +1,62 @@
+//go:build linux
+
+// This program demonstrates attaching an eBPF program to a kernel symbol.
+// The eBPF program will be attached to the start of the sys_execve
+// kernel function and prints out the number of times it has been called
+// every second.
 package main
 
 import (
-    "log"
-    "os"
-    "os/signal"
+        "log"
+        "time"
 
-    "github.com/cilium/ebpf/link"
-    "github.com/cilium/ebpf/rlimit"
+        "github.com/cilium/ebpf/link"
+        "github.com/cilium/ebpf/rlimit"
 )
 
-//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target amd64 hello hello.c
+//go:generate go tool bpf2go -tags linux bpf kprobe.c -- -I../headers
+
+const mapKey uint32 = 0
 
 func main() {
-    stopper := make(chan os.Signal, 1)
-    signal.Notify(stopper, os.Interrupt)
 
-    // Allow the current process to lock memory for eBPF resources.
-    if err := rlimit.RemoveMemlock(); err != nil {
-        log.Fatal(err)
-    }
+        // Name of the kernel function to trace.
+        fn := "sys_execve"
 
-    // Load the compiled eBPF program into the kernel.
-    objs := helloObjects{}
-    if err := loadHelloObjects(&objs, nil); err != nil {
-        log.Fatalf("loading objects: %v", err)
-    }
-    defer objs.Close()
+        // Allow the current process to lock memory for eBPF resources.
+        if err := rlimit.RemoveMemlock(); err != nil {
+                log.Fatal(err)
+        }
 
-    // Attach the program to the sched_process_exec tracepoint.
-    tp, err := link.Tracepoint("sched", "sched_process_exec", objs.HandleExec, nil)
-    if err != nil {
-        log.Fatalf("opening tracepoint: %s", err)
-    }
-    defer tp.Close()
+        // Load pre-compiled programs and maps into the kernel.
+        objs := bpfObjects{}
+        if err := loadBpfObjects(&objs, nil); err != nil {
+                log.Fatalf("loading objects: %v", err)
+        }
+        defer objs.Close()
 
-    log.Println("Tracing execve()... Press Ctrl+C to stop.")
-    <-stopper
-    log.Println("Detaching kprobe, exiting.")
+        // Open a Kprobe at the entry point of the kernel function and attach the
+        // pre-compiled program. Each time the kernel function enters, the program
+        // will increment the execution counter by 1. The read loop below polls this
+        // map value once per second.
+        kp, err := link.Kprobe(fn, objs.KprobeExecve, nil)
+        if err != nil {
+                log.Fatalf("opening kprobe: %s", err)
+        }
+        defer kp.Close()
+
+        // Read loop reporting the total amount of times the kernel
+        // function was entered, once per second.
+        ticker := time.NewTicker(1 * time.Second)
+        defer ticker.Stop()
+
+        log.Println("Waiting for events..")
+
+        for range ticker.C {
+                var value uint64
+                if err := objs.KprobeMap.Lookup(mapKey, &value); err != nil {
+                        log.Fatalf("reading map: %v", err)
+                }
+                log.Printf("%s called %d times\n", fn, value)
+        }
 }

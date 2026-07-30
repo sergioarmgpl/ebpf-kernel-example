@@ -21,6 +21,8 @@ If you need Go for building or running Go-based tools, install it with:
 
 ```shell
 apk add go
+apk add docker 
+service docker start
 ```
 
 
