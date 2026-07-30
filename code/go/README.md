@@ -16,7 +16,27 @@ This directory contains a Go example that compiles and attaches an eBPF program 
 
 ## How to build
 
-From this folder, run:
+Before running `go generate`, you need a kernel header file named `vmlinux.h` in this folder.
+
+You also need the libbpf development headers so `bpf/bpf_helpers.h` can be found.
+
+On Ubuntu/Debian:
+
+```bash
+sudo apt-get install -y bpftool libbpf-dev clang llvm libelf-dev
+cd code/go
+sudo bpftool btf dump file /sys/kernel/btf/vmlinux format c > vmlinux.h
+```
+
+On Alpine:
+
+```bash
+sudo apk add bpftool libbpf-dev clang llvm elfutils-dev
+cd code/go
+sudo bpftool btf dump file /sys/kernel/btf/vmlinux format c > vmlinux.h
+```
+
+Then build:
 
 ```bash
 go generate

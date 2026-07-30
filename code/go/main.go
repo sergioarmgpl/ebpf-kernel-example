@@ -27,12 +27,12 @@ func main() {
     }
     defer objs.Close()
 
-    // Attach the program to the execve kprobe.
-    kp, err := link.Kprobe("sys_execve", objs.Hello, nil)
+    // Attach the program to the sched_process_exec tracepoint.
+    tp, err := link.Tracepoint("sched", "sched_process_exec", objs.Hello, nil)
     if err != nil {
-        log.Fatalf("opening kprobe: %s", err)
+        log.Fatalf("opening tracepoint: %s", err)
     }
-    defer kp.Close()
+    defer tp.Close()
 
     log.Println("Tracing execve()... Press Ctrl+C to stop.")
     <-stopper

@@ -5,8 +5,8 @@
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
-SEC("kprobe/sys_execve")
-int hello(void *ctx) {
+SEC("tracepoint/sched/sched_process_exec")
+int handle_exec(void *ctx) {
     bpf_printk("Hello World from eBPF!\n");
     return 0;
 }
