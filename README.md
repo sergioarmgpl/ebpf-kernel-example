@@ -1,16 +1,24 @@
-## How to install BCC and its dependencies on Ubuntu
+﻿# eBPF Kernel Example Repository
 
-**1.** Inside the Killercoda Ubuntu playground, update the package index and install the BCC tools package, which ships the Python bindings, the `bpfcc-tools`, and the required kernel headers:
+This repository contains example eBPF programs in Python and Go, plus runtime examples for Falco and Tetragon.
 
-```shell
+## Ubuntu dependencies
+
+Install BCC, the Python bindings, and LLVM support:
+
+```bash
 sudo apt-get update
 sudo apt-get install -y bpfcc-tools linux-headers-$(uname -r) python3-bpfcc
-sudo apt-get install llvm clang
+sudo apt-get install -y llvm clang
+sudo apt-get install -y libbpf-dev libbpf
 ```
 
-## How to install BCC and its dependencies on Alpine
-```shell
-apk update 
+## Alpine dependencies
+
+Install the packages required for BCC, Python, and eBPF development:
+
+```bash
+apk update
 apk add build-base linux-headers git unzip nano vim elfutils-dev
 apk add bcc-tools python3 py3-pip py3-bcc
 apk add linux-virt-dev
@@ -18,22 +26,30 @@ apk add llvm clang
 apk add libbpf-dev libbpf
 ```
 
-If you need Go for building or running Go-based tools, install it with:
+If you need Go support on Alpine:
 
-```shell
+```bash
 apk add go
-apk add docker 
-service docker start
 ```
 
+## Examples index
 
+- `code/python/chmod.py` - monitor changes to file permissions on a target file with a BCC kprobe.
+- `code/python/delete_file.py` - detect deletion of a target file using a kernel unlink kprobe.
+- `code/python/exec.py` - demonstrate attaching an eBPF program to `execve()` with BCC.
+- `code/python/ping.py` - monitor outgoing network traffic from the `ping` process.
+- `code/python/write_file.py` - detect writes to a target file with a `vfs_write` kprobe.
+- `code/go/` - Go example that attaches a kprobe to `sys_execve` and counts how many times it is called.
+- `runtime/falco/README.md` - instructions for running Falco in Docker with host mounts.
+- `runtime/tetragon/README.md` - instructions for running Tetragon in Docker with a policy file.
 
-**2.** Verify that BCC is installed correctly by importing it from Python:
+## Verify BCC installation
 
-```shell
+Confirm BCC is available from Python:
+
+```bash
 sudo python3 -c "from bcc import BPF; print('BCC installed correctly')"
 ```
-
 
 You should see:
 
@@ -41,15 +57,8 @@ You should see:
 BCC installed correctly
 ```
 
-BCC takes care of compiling the C code you write into eBPF bytecode using LLVM, and of loading that bytecode into the kernel through the `bpf()` system call, so you don't need a separate cross-compilation toolchain to get started.
+## Notes
 
-To run the examples using BCC with python follow the next steps:
-
-1. Change to the code directory
-```
-cd code/python
-```
-2. Run the example using Python
-```
-python3 EXAMPLE.py
-```
+- These dependencies are intended for the examples in this repository.
+- For Python examples, run the scripts from `code/python` with `python3`.
+- For the Go example, use `go generate` and `go build` inside `code/go`.
