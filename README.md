@@ -7,11 +7,20 @@ sudo apt-get update
 sudo apt-get install -y bpfcc-tools linux-headers-$(uname -r) python3-bpfcc
 ```
 
-
+## How to install BCC and its dependencies on Alpine
+```shell
 apk update 
 apk add build-base linux-headers git unzip nano vim elfutils-dev
 apk add bcc-tools python3 py3-pip py3-bcc
 apk add linux-virt-dev
+```
+
+If you need Go for building or running Go-based tools, install it with:
+
+```shell
+apk add go
+```
+
 
 
 **2.** Verify that BCC is installed correctly by importing it from Python:
