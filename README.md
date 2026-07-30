@@ -15,6 +15,7 @@ apk add build-base linux-headers git unzip nano vim elfutils-dev
 apk add bcc-tools python3 py3-pip py3-bcc
 apk add linux-virt-dev
 apk add llvm clang
+apk add libbpf-dev libbpf
 ```
 
 If you need Go for building or running Go-based tools, install it with:
