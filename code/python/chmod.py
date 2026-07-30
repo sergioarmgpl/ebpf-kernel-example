@@ -26,4 +26,4 @@ while True:
         continue
 
     if TARGET_FILE.encode() in msg:
-        print(f"Se cambiaron los permisos del archivo '{TARGET_FILE}'!")
+        print(f"Permissions changed for '{TARGET_FILE}'!")

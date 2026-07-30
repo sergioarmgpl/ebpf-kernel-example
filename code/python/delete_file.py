@@ -15,7 +15,7 @@ int kprobe__security_inode_unlink(struct pt_regs *ctx, struct inode *dir, struct
 
 b = BPF(text=program)
 
-print(f"Escuchando eliminación del archivo '{TARGET_FILE}'... Ctrl+C para salir.")
+print(f"Listening for deletion of '{TARGET_FILE}'... Ctrl+C to exit.")
 
 while True:
     try:
@@ -24,4 +24,4 @@ while True:
         continue
 
     if TARGET_FILE.encode() in msg:
-        print(f"Se eliminó el archivo '{TARGET_FILE}'!")
+        print(f"File '{TARGET_FILE}' was deleted!")

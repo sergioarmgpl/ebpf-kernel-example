@@ -1,6 +1,6 @@
 from bcc import BPF
 
-# Archivo que queremos monitorear (ajusta el nombre según lo que necesites)
+# File we want to monitor (adjust the name as needed)
 TARGET_FILE = "test.txt"
 
 program = r"""
@@ -9,14 +9,14 @@ program = r"""
 int kprobe__vfs_write(struct pt_regs *ctx, struct file *file, const char __user *buf, size_t count) {
     char fname[64];
     bpf_probe_read_kernel_str(&fname, sizeof(fname), file->f_path.dentry->d_name.name);
-    bpf_trace_printk("write to file: %s\\n", fname);
+    bpf_trace_printk("write to file: %s\n", fname);
     return 0;
 }
 """
 
 b = BPF(text=program)
 
-print(f"Escuchando escrituras al archivo '{TARGET_FILE}'... Ctrl+C para salir.")
+print(f"Listening for writes to '{TARGET_FILE}'... Ctrl+C to exit.")
 
 while True:
     try:
@@ -25,4 +25,4 @@ while True:
         continue
 
     if TARGET_FILE.encode() in msg:
-        print(f"[{ts:.6f}] PID {pid} ({task.decode()}) escribió en '{TARGET_FILE}'")
+        print(f"[{ts:.6f}] PID {pid} ({task.decode()}) wrote to '{TARGET_FILE}'")

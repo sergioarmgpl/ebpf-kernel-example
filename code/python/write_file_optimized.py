@@ -1,6 +1,6 @@
 from bcc import BPF
 
-# Archivo que queremos monitorear
+# File we want to monitor
 TARGET_FILE = "test.txt"
 TARGET_LEN = len(TARGET_FILE)
 
@@ -16,7 +16,7 @@ int kprobe__vfs_write(struct pt_regs *ctx, struct file *file, const char __user 
 
     bpf_probe_read_kernel_str(&fname, sizeof(fname), file->f_path.dentry->d_name.name);
 
-    // Comparación byte a byte, desenrollada en tiempo de compilación
+    // Byte-by-byte comparison unrolled at compile time
     #pragma unroll
     for (int i = 0; i < TARGET_LEN; i++) {{
         if (fname[i] != target[i]) {{
@@ -24,17 +24,17 @@ int kprobe__vfs_write(struct pt_regs *ctx, struct file *file, const char __user 
         }}
     }}
 
-    // Verificamos que el nombre termine justo ahí (evita que "test.txt2" haga match)
+    // Verify the name ends exactly there (avoids matching "test.txt2")
     if (fname[TARGET_LEN] != '\\0') {{
         return 0;
     }}
 
-    bpf_trace_printk("Escritura detectada en archivo objetivo: %s\\n", fname);
+    bpf_trace_printk("Detected write to target file: %s\n", fname);
     return 0;
 }}
 """
 
 b = BPF(text=program)
 
-print(f"Escuchando escrituras al archivo '{TARGET_FILE}' (filtrado en kernel)... Ctrl+C para salir.")
+print(f"Listening for writes to '{TARGET_FILE}' (kernel filtered)... Ctrl+C to exit.")
 b.trace_print()
