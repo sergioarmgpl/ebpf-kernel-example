@@ -1,6 +1,6 @@
 from bcc import BPF
 
-# Archivo que queremos monitorear
+# File we want to monitor
 TARGET_FILE = "test.txt"
 
 program = r"""
@@ -17,7 +17,7 @@ int kprobe__security_path_chmod(struct pt_regs *ctx, const struct path *path, um
 
 b = BPF(text=program)
 
-print(f"Escuchando cambios de permisos en '{TARGET_FILE}'... Ctrl+C para salir.")
+print(f"Listening for permission changes on '{TARGET_FILE}'... Ctrl+C to exit.")
 
 while True:
     try:
