@@ -7,6 +7,13 @@ sudo apt-get update
 sudo apt-get install -y bpfcc-tools linux-headers-$(uname -r) python3-bpfcc
 ```
 
+
+apk update 
+apk add build-base linux-headers git unzip nano vim elfutils-dev
+apk add bcc-tools python3 py3-pip py3-bcc
+apk add linux-virt-dev
+
+
 **2.** Verify that BCC is installed correctly by importing it from Python:
 
 ```shell
