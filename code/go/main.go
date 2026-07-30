@@ -28,7 +28,7 @@ func main() {
     defer objs.Close()
 
     // Attach the program to the sched_process_exec tracepoint.
-    tp, err := link.Tracepoint("sched", "sched_process_exec", objs.Hello, nil)
+    tp, err := link.Tracepoint("sched", "sched_process_exec", objs.HandleExec, nil)
     if err != nil {
         log.Fatalf("opening tracepoint: %s", err)
     }
